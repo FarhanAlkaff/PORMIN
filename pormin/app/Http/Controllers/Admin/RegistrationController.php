@@ -157,7 +157,12 @@ class RegistrationController extends Controller
             'created_at' => now(),
         ]);
         AuditLogger::log("Jadwal observasi {$registration->registration_number}", $registration, $data);
-        return back()->with('success', 'Jadwal observasi berhasil disimpan.');
+
+        // Auto WhatsApp notification
+        $wa = app(\App\Services\WhatsappNotificationService::class)
+            ->notifyObservationScheduled($registration, auth()->id());
+
+        return back()->with('success', 'Jadwal observasi tersimpan.')->with('wa', $wa);
     }
 
     public function observationResult(Request $request, StudentRegistration $registration)
@@ -203,6 +208,43 @@ class RegistrationController extends Controller
         AuditLogger::log("Hapus pendaftaran {$registration->registration_number}", $registration);
         $registration->delete();
         return redirect()->route('admin.registrations.index')->with('success', 'Data dihapus.');
+    }
+
+    public function importForm()
+    {
+        return view('admin.registrations.import');
+    }
+
+    public function importStore(Request $request, \App\Services\BatchRegistrationImporter $importer)
+    {
+        $request->validate(['csv' => ['required', 'file', 'mimes:csv,txt', 'max:5120']]);
+        $result = $importer->import($request->file('csv'), auth()->id());
+        AuditLogger::log("Import batch pendaftaran: {$result['success']} sukses, {$result['failed']} gagal", null, ['result' => $result]);
+        return back()->with('import_result', $result);
+    }
+
+    public function importTemplate(\App\Services\BatchRegistrationImporter $importer)
+    {
+        $headers = $importer->csvHeaderTemplate();
+        $sample = [
+            '2026/2027', 'TK-A', 'Al-Azhar Cairo Palembang - Kampus Utama', 'Siswa Baru',
+            'Nur Aisyah', 'Aisyah', 'P', '', '', 'Palembang', '2022-05-10', 'Anak Kandung', '1',
+            'Jl. Merdeka No. 12', '081234567890', '', 'Budi Santoso', 'Siti Aminah', 'Karto Wiryo',
+            'Wiraswasta', 'IRT', '081200000001', '081200000002',
+        ];
+        return response()->streamDownload(function () use ($headers, $sample) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, $headers);
+            fputcsv($out, $sample);
+            fclose($out);
+        }, 'template_pormin_batch.csv', ['Content-Type' => 'text/csv']);
+    }
+
+    public function resendWhatsapp(StudentRegistration $registration, \App\Services\WhatsappNotificationService $wa)
+    {
+        abort_unless($registration->observation_date, 400, 'Jadwal observasi belum ditentukan.');
+        $result = $wa->notifyObservationScheduled($registration, auth()->id());
+        return back()->with('wa', $result)->with('success', 'Notifikasi WA diproses.');
     }
 
     public function export(Request $request)

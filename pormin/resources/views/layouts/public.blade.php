@@ -4,7 +4,12 @@
 <nav class="navbar navbar-expand-lg navbar-azhar sticky-top">
     <div class="container">
         <a class="navbar-brand d-flex align-items-center gap-2" href="{{ route('landing') }}">
-            <span class="brand-mark">AZ</span>
+            @php $logo = \App\Models\InformationSetting::get('logo_path'); @endphp
+            @if($logo && file_exists(public_path($logo)))
+                <img src="{{ asset($logo) }}" alt="Logo" style="width:44px;height:44px;object-fit:contain;background:#fff;border-radius:10px;padding:4px;">
+            @else
+                <span class="brand-mark">AZ</span>
+            @endif
             <div class="d-flex flex-column lh-1">
                 <span style="font-family:'Fraunces',serif;font-weight:700;font-size:1.1rem;">PORMIN</span>
                 <small style="opacity:.85;font-size:.72rem;">Al-Azhar Cairo Palembang</small>

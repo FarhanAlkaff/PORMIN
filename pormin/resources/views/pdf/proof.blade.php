@@ -17,6 +17,10 @@
 <body>
     <div class="header">
         <div class="qr"><img src="data:image/svg+xml;base64,{{ $qr }}" width="90"><div style="font-size:8px;">Scan untuk verifikasi</div></div>
+        @php $logo = \App\Models\InformationSetting::get('logo_path'); @endphp
+        @if($logo && file_exists(public_path($logo)))
+            <img src="{{ public_path($logo) }}" style="width:60px;height:60px;object-fit:contain;float:left;margin-right:10px;">
+        @endif
         <h1>AL-AZHAR CAIRO PALEMBANG</h1>
         <div class="sub">BUKTI PENDAFTARAN MURID BARU · PORMIN (Portal Minat)</div>
     </div>

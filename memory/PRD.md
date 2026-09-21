@@ -117,13 +117,45 @@ DB user: `pormin` / `pormin_password` @ socket `/var/run/mysqld/mysqld.sock` / d
 - `/admin/grades/{id}/age-rule` — kelola aturan usia per grade (termasuk SMA)
 
 ## Backlog (Phase 14+)
-- Notification service modular (WhatsApp / Email / SMS ready to plug)
+- Fonnte WhatsApp API auto-send (siap plug-and-play, admin tinggal isi token di Informasi → Notifikasi WhatsApp)
 - Rich CSV/Excel export dengan phpspreadsheet
 - Feature tests otomatis (Pest/PHPUnit) untuk 12 scenarios
 - Rate limit granular per endpoint dan IP-based
 - Multi-admin roles (super admin, operator observasi) via Policy/Gate
 - Rich text editor untuk konten landing page
-- Logo upload UI (saat ini menggunakan brand mark "AZ" placeholder — user akan input logo sendiri)
+
+## Fitur Tambahan (Iterasi 2 ✅ 21 Sep 2026)
+### Logo Upload
+- Admin → Informasi Landing → "Logo Sekolah": upload PNG/SVG/JPG max 2MB
+- Disimpan di `/app/pormin/public/uploads/`, path di `information_settings.logo_path`
+- Tampil di navbar public, sidebar admin, header PDF bukti & surat observasi
+- Fallback ke brand mark "AZ" jika logo belum diupload
+
+### Batch Import CSV
+- `/admin/registrations/import` — upload file CSV (max 5MB)
+- `BatchRegistrationImporter` service: parse row-by-row lewat `RegistrationService`
+- Setiap baris melewati validasi usia + deteksi duplikat + generate nomor otomatis
+- Download template lewat `/admin/registrations/import/template`
+- Report akhir: sukses/gagal + daftar error per baris
+
+### Announcement Board
+- Marquee/teks berjalan di paling atas landing (gradient green-gold, animated CSS)
+- Admin → Informasi Landing → "Papan Pengumuman": judul + item baris demi baris + toggle aktif/nonaktif
+- Data di `information_settings` (`announcement_title`, `announcement_items`, `announcement_active`)
+
+### WhatsApp Notification (Modular)
+- `WhatsappNotificationService` dengan 2 driver:
+  - **link** (default, gratis): generate wa.me URL dengan pesan pre-formatted, tombol "Buka WhatsApp & Kirim" untuk admin
+  - **fonnte**: kirim otomatis via Fonnte API (butuh token dari fonnte.com — konfigurasi di Admin → Informasi → Notifikasi WhatsApp)
+- Nomor HP otomatis dinormalisasi (0 → 62, +62 → 62)
+- Pesan mencakup: nomor pendaftaran, nama, jenjang, TA, tanggal + jam + lokasi + ruang observasi
+- Tercatat sebagai `registration_notes` dengan `note_type='Notifikasi WA'`
+- Auto-trigger saat admin simpan jadwal observasi + tombol "Kirim Ulang WA"
+
+## Persistence Notes
+- MySQL data → `/app/pormin-data/` (survives pod restart)
+- Setup script → `/app/scripts/setup.sh` (idempotent, install PHP/MariaDB + supervisor config + migrate)
+- Uploads → `/app/pormin/public/uploads/` (di dalam /app)
 
 ## Verified Test Results (End-to-End)
 ✅ Landing render OK  

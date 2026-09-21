@@ -13,6 +13,10 @@
 </style></head>
 <body>
     <div class="header">
+        @php $logo = \App\Models\InformationSetting::get('logo_path'); @endphp
+        @if($logo && file_exists(public_path($logo)))
+            <img src="{{ public_path($logo) }}" style="width:60px;height:60px;object-fit:contain;">
+        @endif
         <h1>AL-AZHAR CAIRO PALEMBANG</h1>
         <div>Jl. Jend. Sudirman KM. 3, Palembang</div>
     </div>

@@ -47,10 +47,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/registrations/create', [AdminRegistration::class, 'create'])->name('registrations.create');
         Route::post('/registrations', [AdminRegistration::class, 'store'])->name('registrations.store');
         Route::get('/registrations/export', [AdminRegistration::class, 'export'])->name('registrations.export');
+        Route::get('/registrations/import', [AdminRegistration::class, 'importForm'])->name('registrations.import');
+        Route::post('/registrations/import', [AdminRegistration::class, 'importStore'])->name('registrations.import.store');
+        Route::get('/registrations/import/template', [AdminRegistration::class, 'importTemplate'])->name('registrations.import.template');
         Route::get('/registrations/{registration}', [AdminRegistration::class, 'show'])->name('registrations.show');
         Route::post('/registrations/{registration}/validate', [AdminRegistration::class, 'validateAdmin'])->name('registrations.validate');
         Route::post('/registrations/{registration}/observation', [AdminRegistration::class, 'observation'])->name('registrations.observation');
         Route::post('/registrations/{registration}/observation-result', [AdminRegistration::class, 'observationResult'])->name('registrations.observation-result');
+        Route::post('/registrations/{registration}/resend-wa', [AdminRegistration::class, 'resendWhatsapp'])->name('registrations.resend-wa');
         Route::delete('/registrations/{registration}', [AdminRegistration::class, 'destroy'])->name('registrations.destroy');
 
         Route::get('/academic-years', [MasterController::class, 'years'])->name('years');

@@ -65,8 +65,29 @@
                 <div class="col-md-5"><label class="form-label">Lokasi</label><input name="observation_location" class="form-control" value="{{ $reg->observation_location ?: 'Al-Azhar Cairo Palembang' }}" required></div>
                 <div class="col-md-6"><label class="form-label">Ruang</label><input name="observation_room" class="form-control" value="{{ $reg->observation_room }}" placeholder="Contoh: Ruang Observasi TK"></div>
                 <div class="col-md-6"><label class="form-label">Catatan</label><input name="observation_notes" class="form-control" value="{{ $reg->observation_notes }}"></div>
-                <div class="col-12 text-end"><button class="btn btn-azhar" data-testid="btn-save-observation">Simpan Jadwal</button></div>
+                <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <small class="text-muted"><i class="bi bi-whatsapp me-1" style="color:#25d366;"></i>Notifikasi WA otomatis dikirim ke orang tua setelah simpan</small>
+                    <button class="btn btn-azhar" data-testid="btn-save-observation">Simpan Jadwal & Kirim WA</button>
+                </div>
             </form>
+            @php $wa = session('wa'); @endphp
+            @if($wa)
+                <div class="alert alert-{{ $wa['sent'] ? 'success' : ($wa['wa_link'] ? 'info' : 'warning') }} mt-3" data-testid="wa-alert">
+                    @if($wa['sent'])
+                        <i class="bi bi-check-circle me-1"></i>Pesan WhatsApp <b>terkirim otomatis</b> ke {{ $wa['phone'] }} (via Fonnte).
+                    @elseif($wa['wa_link'])
+                        <i class="bi bi-whatsapp me-1" style="color:#25d366;"></i>Pesan siap dikirim ke <b>{{ $wa['phone'] }}</b>. Klik tombol berikut untuk membuka WhatsApp:
+                        <div class="mt-2"><a href="{{ $wa['wa_link'] }}" target="_blank" class="btn btn-success btn-sm" data-testid="btn-wa-open"><i class="bi bi-whatsapp me-1"></i>Buka WhatsApp & Kirim</a></div>
+                    @else
+                        <i class="bi bi-exclamation-triangle me-1"></i>{{ $wa['error'] ?? 'Tidak dapat mengirim WA.' }}
+                    @endif
+                </div>
+            @endif
+            @if($reg->observation_date)
+                <form method="POST" action="{{ route('admin.registrations.resend-wa', $reg) }}" class="mt-2 d-inline">@csrf
+                    <button class="btn btn-sm btn-outline-success" data-testid="btn-resend-wa"><i class="bi bi-arrow-repeat me-1"></i>Kirim Ulang WA</button>
+                </form>
+            @endif
         </div>
 
         <div class="p-3 bg-white rounded-4 shadow-sm">

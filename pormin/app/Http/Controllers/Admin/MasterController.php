@@ -110,9 +110,20 @@ class MasterController extends Controller
     }
     public function saveInformation(Request $req)
     {
-        $keys = ['landing_hero_title', 'landing_hero_subtitle', 'landing_hero_description', 'info_pendaftaran', 'info_persyaratan', 'info_alur', 'info_jadwal', 'info_faq', 'contact_phone', 'contact_email', 'contact_address'];
+        $keys = ['landing_hero_title', 'landing_hero_subtitle', 'landing_hero_description', 'info_pendaftaran', 'info_persyaratan', 'info_alur', 'info_jadwal', 'info_faq', 'contact_phone', 'contact_email', 'contact_address', 'announcement_title', 'announcement_items', 'announcement_active', 'wa_country_code', 'wa_driver', 'wa_fonnte_token'];
         foreach ($keys as $k) {
             if ($req->has($k)) InformationSetting::set($k, (string) $req->input($k));
+        }
+        // Logo upload
+        if ($req->hasFile('logo')) {
+            $req->validate(['logo' => ['image', 'mimes:jpeg,png,jpg,webp,svg', 'max:2048']]);
+            $file = $req->file('logo');
+            $name = 'logo-' . time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads'), $name);
+            InformationSetting::set('logo_path', 'uploads/' . $name);
+        }
+        if ($req->boolean('logo_remove')) {
+            InformationSetting::set('logo_path', null);
         }
         return back()->with('success', 'Informasi landing tersimpan.');
     }

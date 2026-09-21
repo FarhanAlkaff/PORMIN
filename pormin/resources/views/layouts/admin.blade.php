@@ -4,7 +4,12 @@
 <div class="d-flex">
     <aside class="sidebar p-3" style="width:260px;">
         <a href="{{ route('landing') }}" class="d-flex align-items-center gap-2 mb-4 text-white text-decoration-none">
-            <span class="brand-mark">AZ</span>
+            @php $logo = \App\Models\InformationSetting::get('logo_path'); @endphp
+            @if($logo && file_exists(public_path($logo)))
+                <img src="{{ asset($logo) }}" alt="Logo" style="width:44px;height:44px;object-fit:contain;background:#fff;border-radius:10px;padding:4px;">
+            @else
+                <span class="brand-mark">AZ</span>
+            @endif
             <div>
                 <div style="font-family:'Fraunces',serif;font-weight:700;">PORMIN Admin</div>
                 <small style="opacity:.75;">Al-Azhar Cairo Palembang</small>
@@ -14,6 +19,7 @@
             <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" data-testid="sidebar-dashboard"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a>
             <a href="{{ route('admin.registrations.index') }}" class="{{ request()->routeIs('admin.registrations.*') ? 'active' : '' }}" data-testid="sidebar-registrations"><i class="bi bi-file-earmark-person me-2"></i>Data Pendaftaran</a>
             <a href="{{ route('admin.registrations.create') }}" data-testid="sidebar-input-lama"><i class="bi bi-plus-square me-2"></i>Input Data Lama</a>
+            <a href="{{ route('admin.registrations.import') }}" class="{{ request()->routeIs('admin.registrations.import*') ? 'active' : '' }}" data-testid="sidebar-import"><i class="bi bi-cloud-upload me-2"></i>Import Batch CSV</a>
             <div class="text-uppercase small mt-3 mb-1" style="opacity:.65;letter-spacing:.05em;">Master Data</div>
             <a href="{{ route('admin.years') }}" class="{{ request()->routeIs('admin.years') ? 'active' : '' }}" data-testid="sidebar-years"><i class="bi bi-calendar-week me-2"></i>Tahun Ajaran</a>
             <a href="{{ route('admin.grades') }}" class="{{ request()->routeIs('admin.grades*') ? 'active' : '' }}" data-testid="sidebar-grades"><i class="bi bi-mortarboard me-2"></i>Grade & Aturan Usia</a>

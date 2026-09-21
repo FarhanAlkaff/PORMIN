@@ -2,6 +2,34 @@
 @section('title', 'Beranda')
 
 @section('content')
+@php
+    $anActive = \App\Models\InformationSetting::get('announcement_active') === '1';
+    $anTitle = \App\Models\InformationSetting::get('announcement_title', 'Pengumuman');
+    $anItems = collect(explode("\n", (string)\App\Models\InformationSetting::get('announcement_items', '')))->map(fn($x)=>trim($x))->filter()->values();
+@endphp
+@if($anActive && $anItems->count())
+<div class="announcement-strip py-2 px-3">
+    <div class="container d-flex align-items-center gap-3">
+        <span class="badge rounded-pill fw-bold" style="background:var(--azhar-gold);color:var(--azhar-green-dark);letter-spacing:.08em;font-size:.72rem;padding:.5rem .8rem;"><i class="bi bi-megaphone-fill me-1"></i>{{ $anTitle }}</span>
+        <div class="marquee flex-grow-1" data-testid="announcement-marquee">
+            <div class="marquee-track">
+                @foreach($anItems as $item)<span class="marquee-item">{{ $item }}</span><span class="marquee-sep">◆</span>@endforeach
+                @foreach($anItems as $item)<span class="marquee-item">{{ $item }}</span><span class="marquee-sep">◆</span>@endforeach
+            </div>
+        </div>
+    </div>
+</div>
+@push('head')
+<style>
+    .announcement-strip{background:linear-gradient(90deg,var(--azhar-green-dark),var(--azhar-green));color:#fff;border-bottom:2px solid var(--azhar-gold);}
+    .marquee{overflow:hidden;white-space:nowrap;position:relative;mask-image:linear-gradient(to right,transparent,#000 5%,#000 95%,transparent);}
+    .marquee-track{display:inline-flex;gap:1.5rem;animation:pormin-marquee 32s linear infinite;padding-left:100%;}
+    .marquee-item{font-weight:600;font-size:.92rem;}
+    .marquee-sep{color:var(--azhar-gold);opacity:.7;}
+    @keyframes pormin-marquee{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+</style>
+@endpush
+@endif
 <section class="hero py-5">
     <div class="container hero-inner py-4">
         <div class="row align-items-center g-5">
