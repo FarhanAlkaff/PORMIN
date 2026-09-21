@@ -1,0 +1,73 @@
+<?php
+
+use App\Http\Controllers\Admin\AuthController as AdminAuth;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\MasterController;
+use App\Http\Controllers\Admin\RegistrationController as AdminRegistration;
+use App\Http\Controllers\RegistrationController;
+use Illuminate\Support\Facades\Route;
+
+// Public
+Route::get('/', [RegistrationController::class, 'landing'])->name('landing');
+Route::get('/informasi', [RegistrationController::class, 'info'])->defaults('section', 'informasi')->name('info.pendaftaran');
+Route::get('/persyaratan', [RegistrationController::class, 'info'])->defaults('section', 'persyaratan')->name('info.persyaratan');
+Route::get('/alur-pendaftaran', [RegistrationController::class, 'info'])->defaults('section', 'alur-pendaftaran')->name('info.alur');
+Route::get('/jadwal', [RegistrationController::class, 'info'])->defaults('section', 'jadwal')->name('info.jadwal');
+Route::get('/faq', [RegistrationController::class, 'info'])->defaults('section', 'faq')->name('info.faq');
+
+Route::get('/pendaftaran', [RegistrationController::class, 'create'])->name('registration.create');
+Route::post('/pendaftaran', [RegistrationController::class, 'store'])
+    ->middleware('throttle:10,1')
+    ->name('registration.store');
+
+Route::post('/xhr/validate-age', [RegistrationController::class, 'validateAge'])->name('api.validate-age');
+Route::post('/xhr/check-duplicate', [RegistrationController::class, 'checkDuplicate'])->name('api.check-duplicate');
+
+Route::match(['get', 'post'], '/pendaftaran/cek', [RegistrationController::class, 'check'])
+    ->middleware('throttle:20,1')
+    ->name('registration.check');
+
+Route::get('/pendaftaran/hasil/{number}', [RegistrationController::class, 'result'])->name('registration.result');
+Route::get('/pendaftaran/pdf/{number}', [RegistrationController::class, 'pdf'])->name('registration.pdf');
+Route::get('/pendaftaran/surat-observasi/{number}', [RegistrationController::class, 'observationLetter'])->name('registration.observation-pdf');
+Route::get('/verify/{token}', [RegistrationController::class, 'verify'])->name('verify');
+
+// Admin
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::middleware('guest')->group(function () {
+        Route::get('/login', [AdminAuth::class, 'showLogin'])->name('login');
+        Route::post('/login', [AdminAuth::class, 'login'])->middleware('throttle:5,1');
+    });
+
+    Route::middleware('auth')->group(function () {
+        Route::post('/logout', [AdminAuth::class, 'logout'])->name('logout');
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+        Route::get('/registrations', [AdminRegistration::class, 'index'])->name('registrations.index');
+        Route::get('/registrations/create', [AdminRegistration::class, 'create'])->name('registrations.create');
+        Route::post('/registrations', [AdminRegistration::class, 'store'])->name('registrations.store');
+        Route::get('/registrations/export', [AdminRegistration::class, 'export'])->name('registrations.export');
+        Route::get('/registrations/{registration}', [AdminRegistration::class, 'show'])->name('registrations.show');
+        Route::post('/registrations/{registration}/validate', [AdminRegistration::class, 'validateAdmin'])->name('registrations.validate');
+        Route::post('/registrations/{registration}/observation', [AdminRegistration::class, 'observation'])->name('registrations.observation');
+        Route::post('/registrations/{registration}/observation-result', [AdminRegistration::class, 'observationResult'])->name('registrations.observation-result');
+        Route::delete('/registrations/{registration}', [AdminRegistration::class, 'destroy'])->name('registrations.destroy');
+
+        Route::get('/academic-years', [MasterController::class, 'years'])->name('years');
+        Route::post('/academic-years', [MasterController::class, 'saveYear'])->name('years.save');
+
+        Route::get('/grades', [MasterController::class, 'grades'])->name('grades');
+        Route::post('/grades', [MasterController::class, 'saveGrade'])->name('grades.save');
+        Route::get('/grades/{grade}/age-rule', [MasterController::class, 'ageRule'])->name('grades.age-rule');
+        Route::post('/grades/{grade}/age-rule', [MasterController::class, 'saveAgeRule'])->name('grades.age-rule.save');
+
+        Route::get('/campuses', [MasterController::class, 'campuses'])->name('campuses');
+        Route::post('/campuses', [MasterController::class, 'saveCampus'])->name('campuses.save');
+
+        Route::get('/categories', [MasterController::class, 'categories'])->name('categories');
+        Route::post('/categories', [MasterController::class, 'saveCategory'])->name('categories.save');
+
+        Route::get('/information', [MasterController::class, 'information'])->name('information');
+        Route::post('/information', [MasterController::class, 'saveInformation'])->name('information.save');
+    });
+});
